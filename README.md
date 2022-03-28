@@ -1,4 +1,11 @@
-# Obtaining Renode
+# HPS tests on Renode
+
+Copyright (c) 2022 [Antmicro](https://www.antmicro.com/)
+
+This repository contains a basic test setup for the STM32G0 part of HPS.
+It verifies booting and flashing via I2C with the dedicated HPS Host Controller block.
+
+## Obtaining Renode
 
 You can download the latest Renode build from https://builds.antmicro.com - look for the linux-portable.tar.gz package.
 
@@ -10,7 +17,7 @@ You can run Renode with the ``./renode`` command, or run Robot tests with ``./re
 
 Renode documentation is available at https://docs.renode.io.
 
-# Creating the platform
+## Creating the platform
 
 You can either load the provided script with ``include @hps.resc`` or follow the instructions below step by step.
 If you want to use the script, skip to point 7.
@@ -88,7 +95,7 @@ pause
 
 These commands can be abbreviated as ``s`` and ``p`` respectively.
 
-# Interacting with the HPS Host Controller
+## Interacting with the HPS Host Controller
 
 1. To display a list of available actions that the host controller can perform, type
 
@@ -157,7 +164,7 @@ host.HPSHostController ReadMagicNumber "1.0"
 
 > Note: The "1.0" is the time for the controller will wait for data from the slave; if there is no data, a zero will be returned. This API is not yet final, but this solution allows us to prevent Renode hanging in case the software does not return information.
 
-# Example test scenario, with both binaries (stage0 and stage1) loaded:
+## Example test scenario, with both binaries (stage0 and stage1) loaded:
 
 Commands to execute:
 ```
@@ -169,7 +176,7 @@ host.HPSHostController ReadCommonErrorStatus "1.0"	# (verify error register afte
 host.HPSHostController ReadMagicNumber "1.0"
 ```
 
-# Example test scenario with only stage0 loaded initially, and stage1 loaded from stage0:
+## Example test scenario with only stage0 loaded initially, and stage1 loaded from stage0:
 
 Commands to execute:
 ```
@@ -185,7 +192,7 @@ host.HPSHostController ReadCommonErrorStatus "1.0"	    # (verify error register 
 host.HPSHostController ReadMagicNumber "1.0"
 ```
 
-# Running robot test
+## Running robot test
 
 To execute automated test in Renode from the provided Robot file, run:
 
@@ -211,7 +218,7 @@ Tests finished successfully :)
 
 For detailed results, see the created ``results.html``.
 
-# Inspection and debugging
+## Inspection and debugging
 
 1. Inspect and configure log level of the platform, and/or set it for a specific peripheral:
 
