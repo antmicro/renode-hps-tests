@@ -7,7 +7,7 @@ It verifies booting and flashing via I2C with the dedicated HPS Host Controller 
 
 ## Obtaining Renode
 
-You can download the latest Renode build from https://builds.antmicro.com - look for the linux-portable.tar.gz package.
+You can download the latest Renode build from https://builds.renode.io - look for the linux-portable.tar.gz package.
 
 Direct path to the latest release (recommended): https://dl.antmicro.com/projects/renode/builds/renode-latest.linux-portable.tar.gz.
 
