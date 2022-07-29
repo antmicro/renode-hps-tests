@@ -107,22 +107,39 @@ and hit Tab twice. You will see a list similar to:
 
 ```
  AttachTo
+ CommandEraseSPIFlash
+ CommandEraseStage1
+ CommandIssueReset
+ CommandLaunchApplication
+ CommandLaunchStage1
  DebugLog
  DetachFrom
  FlashMCU
- IssueReset
- LaunchStage1
  Log
  NoisyLog
- ReadApplicationVersion
- ReadCommonErrorStatus
- ReadCommonSystemStatus
+ ReadCameraConfiguration
+ ReadCameraTestIterations
+ ReadDebugIndex
+ ReadDebugValue
+ ReadEnabledFeatures
+ ReadError
+ ReadFeature0StatusBits
  ReadFeature1StatusBits
- ReadFeature2StatusBits
  ReadFirmwareVersionHigh
  ReadFirmwareVersionLow
+ ReadFPGABootCount
+ ReadFPGALoopCount
+ ReadFPGAROMVersion
  ReadHardwareVersion
  ReadMagicNumber
+ ReadMemoryBankAvailable
+ ReadOptionBytes
+ ReadPartIDs
+ ReadPreviousCrash
+ ReadSPIFlashStatus
+ ReadSystemStatus
+ SetNumberOfCameraTestIterations
+ SetOptionBytes
 ```
 
 2. To see full signatures of methods just enter the controller name and press enter:
@@ -136,22 +153,39 @@ You will see more detailed output
 ```
 The following methods are available:
  - Void AttachTo (II2CPeripheral obj)
+ - Void CommandEraseSPIFlash ()
+ - Void CommandEraseStage1 ()
+ - Void CommandIssueReset ()
+ - Void CommandLaunchApplication ()
+ - Void CommandLaunchStage1 ()
  - Void DebugLog (String message)
  - Void DetachFrom (II2CPeripheral obj)
- - Void FlashMCU (String path)
- - Void IssueReset ()
- - Void LaunchStage1 ()
+ - Void FlashMCU (ReadFilePath path)
  - Void Log (LogLevel type, String message)
  - Void NoisyLog (String message)
- - Byte[] ReadApplicationVersion (TimeInterval timeInterval)
- - String[,] ReadCommonErrorStatus (TimeInterval timeInterval)
- - String[,] ReadCommonSystemStatus (TimeInterval timeInterval)
- - Byte[] ReadFeature1StatusBits (TimeInterval timeInterval)
- - Byte[] ReadFeature2StatusBits (TimeInterval timeInterval)
+ - String[,] ReadCameraConfiguration (TimeInterval timeInterval)
+ - Byte[] ReadCameraTestIterations (TimeInterval timeInterval)
+ - Byte[] ReadDebugIndex (TimeInterval timeInterval)
+ - Byte[] ReadDebugValue (TimeInterval timeInterval)
+ - String[,] ReadEnabledFeatures (TimeInterval timeInterval)
+ - String[,] ReadError (TimeInterval timeInterval)
+ - String[,] ReadFeature0StatusBits (TimeInterval timeInterval)
+ - String[,] ReadFeature1StatusBits (TimeInterval timeInterval)
  - Byte[] ReadFirmwareVersionHigh (TimeInterval timeInterval)
  - Byte[] ReadFirmwareVersionLow (TimeInterval timeInterval)
+ - Byte[] ReadFPGABootCount (TimeInterval timeInterval)
+ - Byte[] ReadFPGALoopCount (TimeInterval timeInterval)
+ - Byte[] ReadFPGAROMVersion (TimeInterval timeInterval)
  - Byte[] ReadHardwareVersion (TimeInterval timeInterval)
  - Byte[] ReadMagicNumber (TimeInterval timeInterval)
+ - Byte[] ReadMemoryBankAvailable (TimeInterval timeInterval)
+ - Byte[] ReadOptionBytes (TimeInterval timeInterval)
+ - Byte[] ReadPartIDs (TimeInterval timeInterval)
+ - Byte[] ReadPreviousCrash (TimeInterval timeInterval)
+ - Byte[] ReadSPIFlashStatus (TimeInterval timeInterval)
+ - String[,] ReadSystemStatus (TimeInterval timeInterval)
+ - Void SetNumberOfCameraTestIterations (Int32 count)
+ - Void SetOptionBytes (Int32 value)
 Usage:
  host.HPSHostController MethodName param1 param2 ...
 ```
@@ -168,11 +202,11 @@ host.HPSHostController ReadMagicNumber "1.0"
 
 Commands to execute:
 ```
-host.HPSHostController ReadCommonSystemStatus "1.0"	# (verify status register before stage1 launch)
-host.HPSHostController ReadCommonErrorStatus "1.0"	# (verify error register before stage1 launch)
+host.HPSHostController ReadSystemStatus "1.0"	    # (verify status register before stage1 launch)
+host.HPSHostController ReadError "1.0"	            # (verify error register before stage1 launch)
 host.HPSHostController LaunchStage1
-host.HPSHostController ReadCommonSystemStatus "1.0"	# (verify status register after stage1 launch)
-host.HPSHostController ReadCommonErrorStatus "1.0"	# (verify error register after stage1 launch)
+host.HPSHostController ReadSystemStatus "1.0"	    # (verify status register after stage1 launch)
+host.HPSHostController ReadError "1.0"	            # (verify error register after stage1 launch)
 host.HPSHostController ReadMagicNumber "1.0"
 ```
 
@@ -180,15 +214,15 @@ host.HPSHostController ReadMagicNumber "1.0"
 
 Commands to execute:
 ```
-host.HPSHostController ReadCommonSystemStatus "1.0"		# (verify that stage1 is missing)
-sysbus ReadDoubleWord 0x08010000				        # (inspect memory under which stage1 should be present)
+host.HPSHostController ReadSystemStatus "1.0"           # (verify that stage1 is missing)
+sysbus ReadDoubleWord 0x0800A000                        # (inspect memory under which stage1 should be present)
 host.HPSHostController FlashMCU @path-to-file/stage1_app.bin	# (this may take some time)
-sysbus ReadDoubleWord 0x08010000				        # (again inspect memory under which stage1 should be present)
-host.HPSHostController IssueReset
+sysbus ReadDoubleWord 0x0800A000                        # (again inspect memory under which stage1 should be present)
+host.HPSHostController CommandIssueReset
 # Leave some short time for the reset to finish
-host.HPSHostController LaunchStage1
-host.HPSHostController ReadCommonSystemStatus "1.0"	    # (verify status register after stage1 launch)
-host.HPSHostController ReadCommonErrorStatus "1.0"	    # (verify error register after stage1 launch)
+host.HPSHostController CommandLaunchStage1
+host.HPSHostController ReadSystemStatus "1.0"           # (verify status register after stage1 launch)
+host.HPSHostController ReadError "1.0"                  # (verify error register after stage1 launch)
 host.HPSHostController ReadMagicNumber "1.0"
 ```
 
@@ -262,6 +296,6 @@ Then connect from the host as usual:
 > Note: You can issue Monitor commands from the GDB level:
 >
 > ```
-> (gdb) mon host.HPSHostController ReadCommonSystemStatus "1.0"
+> (gdb) mon host.HPSHostController ReadSystemStatus "1.0"
 > ```
 
