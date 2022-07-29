@@ -37,54 +37,46 @@ Should Launch Stage1
     Start Emulation
 
     Sleep                     1
-    ${status}=                Execute Command           host.HPSHostController ReadCommonSystemStatus "1.0"             # (verify that stage1 is missing)
+    ${status}=                Execute Command           host.HPSHostController ReadSystemStatus "1.0"             # (verify that stage1 is missing)
 
-    Should Contain            ${status}                 |1${SPACE*4}|5${SPACE*2}|WPOFF${SPACE*4}|Write protect pin off${SPACE*30}|
-    Should Contain            ${status}                 |0${SPACE*4}|4${SPACE*2}|WPON${SPACE*5}|Write protect pin on${SPACE*31}|
-    Should Contain            ${status}                 |1${SPACE*4}|3${SPACE*2}|ANONVER${SPACE*2}|The stage 1 image has failed to verify${SPACE*13}|
-    Should Contain            ${status}                 |0${SPACE*4}|2${SPACE*2}|AVERIFY${SPACE*2}|The stage 1 image is verified${SPACE*22}|
-    Should Contain            ${status}                 |0${SPACE*4}|1${SPACE*2}|FAULT${SPACE*4}|System has an unrecoverable fault${SPACE*18}|
-    Should Contain            ${status}                 |1${SPACE*4}|0${SPACE*2}|OK${SPACE*7}|System is operational${SPACE*30}|
+    Should Contain            ${status}                 |1${SPACE*4}|5${SPACE*2}|WPOFF${SPACE*13}|Write protect pin off${SPACE*30}|
+    Should Contain            ${status}                 |0${SPACE*4}|4${SPACE*2}|WPON${SPACE*14}|Write protect pin on${SPACE*31}|
+    Should Contain            ${status}                 |1${SPACE*4}|3${SPACE*2}|STAGE0${SPACE*12}|Stage 0 is running${SPACE*33}|
+    Should Contain            ${status}                 |${SPACE*5}|2${SPACE*2}|${SPACE*18}|${SPACE*51}|
+    Should Contain            ${status}                 |0${SPACE*4}|1${SPACE*2}|FAULT${SPACE*13}|System has an unrecoverable fault${SPACE*18}|
+    Should Contain            ${status}                 |1${SPACE*4}|0${SPACE*2}|OK${SPACE*16}|System is operational${SPACE*30}|
 
-    ${val}=                   Execute Command           sysbus ReadDoubleWord 0x08010000				                # (inspect memory under which stage1 should be present)
+    ${val}=                   Execute Command           sysbus ReadDoubleWord 0x0800A000				                # (inspect memory under which stage1 should be present)
     Should Contain            ${val}                    0x00000000
 
-    Execute Command           host.HPSHostController FlashMCU @${CURDIR}/stage1_app.bin                                  # (this may take some time)
+    Execute Command           host.HPSHostController FlashMCU @${CURDIR}/stage1_app.bin                    # (this may take some time)
 
     Sleep                     1
-    ${val}=                   Execute Command           sysbus ReadDoubleWord 0x08010000				                # (again inspect memory under which stage1 should be present)
+    ${val}=                   Execute Command           sysbus ReadDoubleWord 0x0800A000				                # (again inspect memory under which stage1 should be present)
     Should Contain            ${val}                    0x0C03FEFE
 
-    Execute Command           host.HPSHostController IssueReset
+    Execute Command           host.HPSHostController CommandIssueReset
     Sleep                     10s                                                                                       # (leave some time for the reset to finish)
 
-    ${status}=                Execute Command           host.HPSHostController ReadCommonSystemStatus "1.0"             # (verify that stage1 is present)
+    Execute Command           host.HPSHostController CommandLaunchStage1
+    Sleep                     5
 
-    Should Contain            ${status}                 |1${SPACE*4}|5${SPACE*2}|WPOFF${SPACE*4}|Write protect pin off${SPACE*30}|
-    Should Contain            ${status}                 |0${SPACE*4}|4${SPACE*2}|WPON${SPACE*5}|Write protect pin on${SPACE*31}|
-    Should Contain            ${status}                 |0${SPACE*4}|3${SPACE*2}|ANONVER${SPACE*2}|The stage 1 image has failed to verify${SPACE*13}|
-    Should Contain            ${status}                 |1${SPACE*4}|2${SPACE*2}|AVERIFY${SPACE*2}|The stage 1 image is verified${SPACE*22}|
-    Should Contain            ${status}                 |0${SPACE*4}|1${SPACE*2}|FAULT${SPACE*4}|System has an unrecoverable fault${SPACE*18}|
-    Should Contain            ${status}                 |1${SPACE*4}|0${SPACE*2}|OK${SPACE*7}|System is operational${SPACE*30}|
-    Sleep                     10s
+    ${status}=                Execute Command           host.HPSHostController ReadSystemStatus "1.0"                   # (verify status register after stage1 launch)
 
-    Execute Command           host.HPSHostController LaunchStage1
-    Sleep                     1
+    Should Contain            ${status}                 |1${SPACE*4}|11${SPACE*1}|STAGE0_LOCKED${SPACE*5}|Whether stage0 has been make read-only${SPACE*13}|
+    Should Contain            ${status}                 |0${SPACE*4}|10${SPACE*1}|CMDINPROGRESS${SPACE*5}|A command is in-progress${SPACE*27}|
+    Should Contain            ${status}                 |0${SPACE*4}|9${SPACE*2}|APPLREADY${SPACE*9}|Application is running, and features may be enabled|
+    Should Contain            ${status}                 |1${SPACE*4}|8${SPACE*2}|APPLRUN${SPACE*11}|Stage 1 has been launched, and is now running${SPACE*6}|
+    Should Contain            ${status}                 |${SPACE*5}|7${SPACE*2}|${SPACE*18}|${SPACE*51}|
+    Should Contain            ${status}                 |${SPACE*5}|6${SPACE*2}|${SPACE*18}|${SPACE*51}|
+    Should Contain            ${status}                 |0${SPACE*4}|5${SPACE*2}|WPOFF${SPACE*13}|Write protect pin off${SPACE*30}|
+    Should Contain            ${status}                 |0${SPACE*4}|4${SPACE*2}|WPON${SPACE*14}|Write protect pin on${SPACE*31}|
+    Should Contain            ${status}                 |0${SPACE*4}|3${SPACE*2}|STAGE0${SPACE*12}|Stage 0 is running${SPACE*33}|
+    Should Contain            ${status}                 |${SPACE*5}|2${SPACE*2}|${SPACE*18}|${SPACE*51}|
+    Should Contain            ${status}                 |0${SPACE*4}|1${SPACE*2}|FAULT${SPACE*13}|System has an unrecoverable fault${SPACE*18}|
+    Should Contain            ${status}                 |1${SPACE*4}|0${SPACE*2}|OK${SPACE*16}|System is operational${SPACE*30}|
 
-    ${status}=                Execute Command           host.HPSHostController ReadCommonSystemStatus "1.0"             # (verify status register after stage1 launch)
-
-    Should Contain            ${status}                 |1${SPACE*4}|9${SPACE*2}|APPLREADY|Application is running, and features may be enabled|
-    Should Contain            ${status}                 |1${SPACE*4}|8${SPACE*2}|APPLRUN${SPACE*2}|Stage 1 has been launched, and is now running${SPACE*6}|
-    Should Contain            ${status}                 |${SPACE*5}|7${SPACE*2}|${SPACE*9}|${SPACE*51}|
-    Should Contain            ${status}                 |${SPACE*5}|6${SPACE*2}|${SPACE*9}|${SPACE*51}|
-    Should Contain            ${status}                 |0${SPACE*4}|5${SPACE*2}|WPOFF${SPACE*4}|Write protect pin off${SPACE*30}|
-    Should Contain            ${status}                 |0${SPACE*4}|4${SPACE*2}|WPON${SPACE*5}|Write protect pin on${SPACE*31}|
-    Should Contain            ${status}                 |0${SPACE*4}|3${SPACE*2}|ANONVER${SPACE*2}|The stage 1 image has failed to verify${SPACE*13}|
-    Should Contain            ${status}                 |1${SPACE*4}|2${SPACE*2}|AVERIFY${SPACE*2}|The stage 1 image is verified${SPACE*22}|
-    Should Contain            ${status}                 |0${SPACE*4}|1${SPACE*2}|FAULT${SPACE*4}|System has an unrecoverable fault${SPACE*18}|
-    Should Contain            ${status}                 |1${SPACE*4}|0${SPACE*2}|OK${SPACE*7}|System is operational${SPACE*30}|
-
-    ${status}=                Execute Command           host.HPSHostController ReadCommonErrorStatus "1.0"              # (verify error register after stage1 launch)
+    ${status}=                Execute Command           host.HPSHostController ReadError "1.0"                          # (verify error register after stage1 launch)
 
     Should Match Regexp       ${status}                 |0\\+ |9\\+ |BUFORUN\\+ |Buffer overrun\\+ |
     Should Match Regexp       ${status}                 |0\\+ |8\\+ |BUFNAVAIL|Buffer not available\\+ |
