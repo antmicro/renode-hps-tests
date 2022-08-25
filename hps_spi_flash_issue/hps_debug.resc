@@ -1,0 +1,51 @@
+using sysbus
+mach create "STM32G0"
+
+# Load HPS specific parts
+machine LoadPlatformDescription @platforms/cpus/stm32g0.repl
+machine LoadPlatformDescriptionFromString "camera: I2C.DummyI2CSlave @ i2c2 0x24 { Register0Value: 0x01; Register1Value: 0xB0 }"
+machine LoadPlatformDescriptionFromString "flashMemory: Memory.MappedMemory {size: 0x4000000}; flashSpi: SPI.GigaDevice_GD25LQ @ spi1 { underlyingMemory: flashMemory }" # This is randomly defined for now
+machine LoadPlatformDescriptionFromString "cs: Miscellaneous.Button @ gpioPortA 8 { -> gpioPortA@8 }"
+machine LoadPlatformDescriptionFromString "fpgaProgram_led: Miscellaneous.LED @ gpioPortC 15"
+machine LoadPlatformDescriptionFromString "debug_led: Miscellaneous.LED @ gpioPortA 1"
+machine LoadPlatformDescriptionFromString "gpioPortA: { 1 -> debug_led@0 }"
+machine LoadPlatformDescriptionFromString "gpioPortB: { 0 -> flashSpi@0 }"
+machine LoadPlatformDescriptionFromString "gpioPortC: { 15 -> fpgaProgram_led@0 }"
+
+#emulation AddHPSHostController
+#connector Connect sysbus.i2c1 host.HPSHostController
+
+emulation AddHPSHostController sysbus.i2c1
+
+# Provide paths to proper ELFs
+$stage0 ?= @/usr/local/google/home/eunicesun/renode-tutorial/stage0
+$stage1 ?= @/usr/local/google/home/eunicesun/renode-tutorial/stage1_app
+$stage1_bin ?= @/usr/local/google/home/eunicesun/renode-tutorial/stage1_app.bin
+
+macro reset
+"""
+    sysbus LoadELF $stage1
+    sysbus LoadSymbolsFrom $stage1
+    sysbus LoadELF $stage0
+"""
+runMacro $reset
+
+echo "Access host.HPSHostController for a list of available commands"
+
+# echo "Now run 'start'"
+
+s
+
+sleep 2
+
+host.HPSHostController ReadSystemStatus "1.0"
+
+sleep 1
+
+host.HPSHostController CommandLaunchStage1
+
+sleep 1
+
+host.HPSHostController ReadSystemStatus "1.0"
+
+host.HPSHostController FlashSPI @fpga_bitstream.bin
